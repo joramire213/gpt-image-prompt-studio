@@ -1,0 +1,38 @@
+{
+  "name": "gpt-image-2-style-library",
+  "version": "2.0.0",
+  "description": "Turn a rough image idea into a production-ready GPT Image 2 prompt: 28 templates, real model capabilities, and mined examples. Spanish-language fork of freestylefly/awesome-gpt-image-2.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joramire213/gpt-image-2-style-library.git"
+  },
+  "homepage": "https://github.com/joramire213/gpt-image-2-style-library",
+  "bugs": {
+    "url": "https://github.com/joramire213/gpt-image-2-style-library/issues"
+  },
+  "keywords": [
+    "agent-skill",
+    "claude-code",
+    "codex",
+    "codex-skill",
+    "gpt-image-2",
+    "prompt",
+    "image-generation",
+    "style-library"
+  ],
+  "bin": {
+    "gpt-image-2-style-library": "bin/install.mjs"
+  },
+  "files": [
+    "SKILL.md",
+    "agents",
+    "assets",
+    "bin",
+    "references"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
