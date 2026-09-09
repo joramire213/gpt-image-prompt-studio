@@ -1,13 +1,15 @@
 ---
 name: gpt-image-2-style-library
-description: Turn a rough image idea into a production-ready GPT Image 2 prompt, using 28 industrial templates and 7 worked examples distilled from a corpus of 541 real cases, plus OpenAI's own prompting rules for the model. Produces the prompt text only — it never generates the image. Use whenever someone wants an image prompt, wants an existing image prompt improved or rewritten, or describes an image they intend to generate: posters, infographics, diagrams, product shots, logos and brand boards, UI mockups, character sheets, photorealistic scenes, illustrations, publication layouts. Requests usually arrive in Spanish (un prompt para generar una imagen, hazme un prompt de imagen, necesito un poster, una infografia, un mockup, un logo); trigger on those as well.
+description: Turn a rough image idea into a production-ready prompt for OpenAI's GPT Image models (2.5 Sunburst and Flare, and GPT Image 2), using 28 industrial templates and 7 worked examples distilled from a corpus of 541 real cases, plus OpenAI's own prompting rules for the model. Produces the prompt text only — it never generates the image. Use whenever someone wants an image prompt, wants an existing image prompt improved or rewritten, or describes an image they intend to generate: posters, infographics, diagrams, product shots, logos and brand boards, UI mockups, character sheets, photorealistic scenes, illustrations, publication layouts. Requests usually arrive in Spanish (un prompt para generar una imagen, hazme un prompt de imagen, necesito un poster, una infografia, un mockup, un logo); trigger on those as well.
 ---
 
-# GPT Image 2 Prompt Studio
+# GPT Image Prompt Studio
 
-Turn a user's image intent into a production-ready prompt for GPT Image 2, OpenAI's current image
-model. The deliverable is **the prompt text, not the image** — the user takes it elsewhere to
-render, so the prompt has to stand alone with no follow-up conversation available to rescue it.
+Turn a user's image intent into a production-ready prompt for OpenAI's GPT Image models. The current
+lineup is `gpt-image-2.5-sunburst` (quality), `gpt-image-2.5-flare` (speed) and the still-available
+`gpt-image-2`; `references/gpt-image.md` has the full comparison. The deliverable is **the prompt
+text, not the image** — the user takes it elsewhere to render, so the prompt has to stand alone with
+no follow-up conversation available to rescue it.
 
 That constraint drives everything below. A prompt that needs a clarifying round after it ships has
 failed, which is why the intake below is worth the one exchange it costs.
@@ -18,13 +20,13 @@ The user writes in Spanish. Every explanation, option and question you produce g
 Only switch if the user writes in another language.
 
 The **final prompt is always written in English**, whatever the language of the request. English is
-what GPT Image 2 handles best and what OpenAI's own examples use. Write it in another language only
+what these models handle best and what OpenAI's own examples use. Write it in another language only
 if the user explicitly asks. Text that must appear *inside* the image is the exception: reproduce it
 in whatever language the user gave it, verbatim.
 
 ## Reference files
 
-- `references/gpt-image-2.md` — the model's real capabilities: valid sizes, aspect ratio limits,
+- `references/gpt-image.md` — the model's real capabilities: valid sizes, aspect ratio limits,
   quality levels, how to make text render correctly, how to phrase exclusions, documented failure
   modes. Read it before writing any prompt. Never invent a size this file does not permit.
 - `references/templates.md` — 28 template skeletons with the pitfall guide for each, plus a set of
@@ -44,7 +46,7 @@ in whatever language the user gave it, verbatim.
    something is genuinely missing, you still ship — with flagged defaults or a stand-in — and ask
    alongside, in a single message.
 3. **Fix the dimensions.** Follow the sizing procedure below and validate before writing.
-4. **Pick a shape, then draft** in the order `gpt-image-2.md` prescribes: scene and context →
+4. **Pick a shape, then draft** in the order `gpt-image.md` prescribes: scene and context →
    subject → key details → constraints block. The shape is a real decision, not a default:
 
    | Shape | When |
@@ -168,6 +170,16 @@ changed and why.
 multiple type sizes, an infographic, a document layout, or identity-sensitive detail. `medium`
 otherwise. `low` only for throwaway exploration.
 
+GPT Image 2.5 added `xhigh` and `max` above those. Do not reach for them by default — OpenAI's own
+guidance is that they are worth it *"only when they improve an unmet quality requirement within your
+latency budget"*, and that a higher setting does not guarantee a better result. Name one when the
+user has said the piece is going to print, or when `high` has already been tried and fell short on
+something specific. Otherwise `high` remains the top of the normal range.
+
+Say which model the size and quality assume, since a `high` on Flare is not a `high` on Sunburst —
+`gpt-image-2.5-sunburst` is the sensible default for anything where quality decides, and
+`gpt-image-2.5-flare` when the user wants speed or volume. They cost the same.
+
 ## Verification before delivering
 
 Read the draft once against this list. Each item is a documented failure mode, not a style
@@ -198,7 +210,7 @@ preference.
 
 Lead with:
 
-**Plantilla:** `<template name>` · **Tamaño:** `<WIDTHxHEIGHT>` (`<ratio>`) · **Calidad:** `<low | medium | high>`
+**Plantilla:** `<template name>` · **Modelo:** `<gpt-image-2.5-sunburst | gpt-image-2.5-flare>` · **Tamaño:** `<WIDTHxHEIGHT>` (`<ratio>`) · **Calidad:** `<low | medium | high | xhigh | max>`
 
 Then the prompt in a fenced code block, in English, ready to copy with no edits.
 

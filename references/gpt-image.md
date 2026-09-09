@@ -1,19 +1,22 @@
-# GPT Image 2 — Model Capabilities and Prompting Rules
+# GPT Image — Model Capabilities and Prompting Rules
 
-What this model actually is, what it can and cannot do, and how OpenAI says to write for it.
-Read this before writing any final prompt. The style library tells you *which* visual direction to
-take; this file tells you how to phrase it so GPT Image 2 executes it faithfully.
+What these models actually are, what they can and cannot do, and how OpenAI says to write for them.
+Read this before writing any final prompt. `templates.md` tells you *which* visual direction to
+take; this file tells you how to phrase it so the model executes it faithfully.
 
-Sources: OpenAI's *GPT Image Generation Models Prompting Guide* (developer cookbook), the
-gpt-image-2 model page, and the launch announcement. Model shipped 2026-04-21.
+Sources: OpenAI's [Image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting),
+the [image generation guide](https://developers.openai.com/api/docs/guides/image-generation), and the
+per-model pages. Current as of 2026-09-09.
 
 ## Contents
 
-- [Identity](#identity)
+- [The lineup](#the-lineup)
+- [Choosing a model](#choosing-a-model)
 - [Size and aspect ratio](#size-and-aspect-ratio)
 - [Quality levels](#quality-levels)
 - [Prompt order](#prompt-order)
 - [Rendering text inside the image](#rendering-text-inside-the-image)
+- [Working from reference images](#working-from-reference-images)
 - [Composition, camera, lighting](#composition-camera-lighting)
 - [Style and materials](#style-and-materials)
 - [Fighting the synthetic look](#fighting-the-synthetic-look)
@@ -21,29 +24,58 @@ gpt-image-2 model page, and the launch announcement. Model shipped 2026-04-21.
 - [Known weaknesses](#known-weaknesses)
 - [Transparent backgrounds](#transparent-backgrounds)
 - [Iterating on a result](#iterating-on-a-result)
+- [Checking the output](#checking-the-output)
 - [Worked examples](#worked-examples)
 
-## Identity
+## The lineup
 
-- Model ID: `gpt-image-2` (default snapshot `gpt-image-2-2026-04-21`).
-- Endpoints: `/v1/images/generations` and `/v1/images/edits` (generation and inpainting).
-- In ChatGPT it is branded "ChatGPT Images 2.0" and runs on every plan.
-- It reasons before it draws. Unlike a pure diffusion model, it works from stated intent and
-  self-checks, which is why explicit constraints pay off and vague adjectives waste the budget.
-  Write for a model that reads instructions, not one that matches keywords.
-- Stated strengths over the previous generation: multilingual text rendering, structured generation
-  (diagrams, infographics, charts, posters, comics), higher resolution, photorealism, and UI
-  screenshots.
+Three models are current. All three take text and image input, output images, and support both
+`/v1/images/generations` and `/v1/images/edits` (inpainting).
+
+| Model | Snapshot | Character |
+|---|---|---|
+| `gpt-image-2.5-sunburst` | `-2026-09-08` | Base model, optimized for quality. Higher image quality than GPT Image 2. Slower. |
+| `gpt-image-2.5-flare` | `-2026-09-08` | Small model, optimized for speed. Quality comparable to GPT Image 2, up to 50% lower latency. |
+| `gpt-image-2` | `-2026-04-21` | Previous generation. Still available, not deprecated. |
+
+**Both 2.5 models cost exactly the same**, and the same as GPT Image 2: $5 per million input text
+tokens ($1.25 cached), $8 per million input image tokens ($2 cached), $30 per million output image
+tokens. Choosing Flare over Sunburst buys latency, never money — OpenAI's own guide warns against
+assuming otherwise: *"Confirm current pricing rather than assuming the faster model costs less."*
+
+In ChatGPT, image generation runs on "ChatGPT Images 2.5" across all plans.
+
+What 2.5 improved over 2.0: more natural lighting and richer textures, better preservation of
+subjects from the user's reference photos, more reliable adherence to editing instructions across
+multiple turns, and sketch- and template-based generation.
+
+These models reason before they draw. They work from stated intent and self-check, which is why
+explicit constraints pay off and vague adjectives waste the budget. Write for a model that reads
+instructions, not one that matches keywords.
+
+## Choosing a model
+
+OpenAI's stated decision rule:
+
+- If GPT Image 2's quality already met your bar, **start with Flare** and see how much latency you
+  can recover.
+- If you have a hard case where GPT Image 2 fell short, **start with Sunburst**, establish the
+  quality first, then try stepping down.
+
+One caution worth carrying: *"The same quality label does not imply the same image quality or
+response time across models."* A `high` on Flare is not a `high` on Sunburst. Compare by running
+identical prompts, references and dimensions, not by trusting the label.
 
 ## Size and aspect ratio
 
-The `size` parameter takes an arbitrary `WIDTHxHEIGHT` string, subject to hard constraints:
+The `size` parameter takes an arbitrary `WIDTHxHEIGHT` string (or `auto`), subject to hard
+constraints that are **unchanged from GPT Image 2**:
 
 - Both edges must be **multiples of 16**.
 - Maximum edge: **3840 px**.
 - Aspect ratio must fall between **1:3 and 3:1**. Nothing more extreme renders.
 - Total pixels between **655,360 and 8,294,400**.
-- Reliable up to **2560x1440**. Above that the model is experimental and quality degrades.
+- Reliable up to **2560x1440**. Above that, quality degrades.
 
 Common sizes worth naming:
 
@@ -62,25 +94,38 @@ rather than defaulting to square.
 
 ## Quality levels
 
+`low`, `medium`, `high`, `xhigh`, `max`, `auto`. The last two are **new with 2.5** and are not
+supported by earlier GPT Image models.
+
 - `low` — fast exploration, high volume, throwaway drafts.
 - `medium` — the general-purpose default.
-- `high` — needed for small text, dense information panels, multi-font layouts, infographics, and
+- `high` — small text, dense information panels, multi-font layouts, infographics,
   identity-sensitive edits. If the image carries more than a headline's worth of text, say high.
+- `xhigh` / `max` — reach for these only with a reason. OpenAI is explicit: *"Use xhigh or max only
+  when they improve an unmet quality requirement within your latency budget. A higher setting
+  doesn't guarantee a better result for every prompt."*
+
+The recommended process is to set a baseline, step up only if the baseline misses a requirement,
+then step back down once approved to recover latency. Tune one setting at a time; compare quality
+levels before rewriting the prompt.
 
 ## Prompt order
 
-OpenAI's recommendation: **background/scene → subject → key details → constraints**, kept in a
-consistent order so that when a result comes back wrong you can tell which block caused it.
+Start by defining the result: *"Name the subject and intended use, such as a product photograph,
+advertisement, or diagram."* Then organize scene, subject, details and constraints — for complex
+requests, in labeled sections.
 
-Note this puts scene before subject, the reverse of most prompt guides. It works because the model
+The ordering that works: **background/scene → subject → key details → constraints**, kept
+consistent so that when a result comes back wrong you can tell which block caused it. Note this
+puts scene before subject, the reverse of most prompt guides. It works because the model
 establishes the world first and then places the subject inside it.
 
-Format is flexible — "minimal prompts, descriptive paragraphs, JSON-like structures,
-instruction-style prompts, and tag-based prompts can all work well" — as long as intent is
-unambiguous. Choose the shape deliberately: prose for photographic and narrative work, sectioned
-prose for multi-zone posters, numbered panels for grids of specified cells, JSON for style locks and
-for any series that must stay visually consistent across renders. `examples.md` has a worked prompt
-for each. What fails is not choosing — an unstructured pile of adjectives produces mush.
+Format is flexible — *"Short prompts, descriptive paragraphs, JSON-like structures, instructions,
+and tags can all express the same intent."* Choose the shape deliberately: prose for photographic
+and narrative work, sectioned prose for multi-zone posters, numbered panels for grids of specified
+cells, JSON for style locks and for any series that must stay visually consistent across renders.
+`examples.md` has a worked prompt for each. What fails is not choosing — an unstructured pile of
+adjectives produces mush. Pick whatever will be easiest to re-read and update later.
 
 Flags borrowed from other tools do nothing here. `--ar 2:3`, `--v`, `--style` are Midjourney syntax;
 state the ratio in words instead.
@@ -90,19 +135,41 @@ is far harder than growing a simple one.
 
 ## Rendering text inside the image
 
-This is where most image prompts fail, and where GPT Image 2 is strongest if addressed correctly.
+This is where most image prompts fail, and where these models are strongest if addressed correctly.
 
 - **Quote literal text, or write it in ALL CAPS.** `a neon sign reading "OPEN LATE"`. Quoting is the
   signal that switches the model into faithful text rendering rather than decorative lettering.
+- **Describe its position and typography** alongside the wording.
 - **Spell out tricky words letter by letter** — brand names, invented words, unusual spellings.
 - **Demand verbatim output**: "EXACT, verbatim, no extra characters."
 - **State that it appears once**: "no extra words", "no duplicate text". Repeated and hallucinated
   text is the most common failure mode.
-- **Specify typography**: font style, weight, size relative to the frame, color, placement,
-  kerning. `Typography: bold sans-serif, high contrast, centered, clean kerning.`
 - **Keep headlines short.** Long strings are harder to render cleanly. If the copy is long, ask for
-  high quality and accept fewer words in larger type.
+  higher quality and accept fewer words in larger type.
 - Non-Latin scripts are supported, including Japanese, Korean, Chinese, Hindi and Bengali.
+- Check spelling and legibility in the output. This is not a step you can skip on trust.
+
+## Working from reference images
+
+2.5 preserves reference subjects better than 2.0 did, but the prompt still carries most of the
+weight. Three techniques, all from OpenAI's guide.
+
+**Assign roles to the references.** *"Identify each input by number and purpose: subject, style,
+clothing, or background. Explain how the inputs should combine."* With more than one reference,
+leaving the model to infer which is which is the single easiest thing to get wrong.
+
+**Separate changes from constraints.** *"For edits, say 'change only X' and list the details to
+preserve, such as identity, geometry, layout, lighting, or labels."* The preserve list is not
+padding — it is the instruction doing the work. OpenAI's own example:
+
+```
+Do not change her face, facial features, skin tone, body shape, pose, or identity in any way.
+Preserve her exact likeness, expression, hairstyle, and proportions. Replace only the clothing...
+```
+
+**Repeat the preserve list on every iteration.** Drift accumulates across turns; restating the
+invariants resets it. If you need a pixel-identical region kept, prompting alone is the wrong tool —
+*"composite the approved edit into the original image instead."*
 
 ## Composition, camera, lighting
 
@@ -113,16 +180,21 @@ This is where most image prompts fail, and where GPT Image 2 is strongest if add
 - **Lighting and mood**: soft diffuse, golden hour, high-contrast, overcast, neon.
 - **Depth**: shallow depth of field, bokeh, film grain.
 
+For people, describe *"body framing, relative scale, gaze, and interaction with objects."*
+Instructions like "full body visible, feet included", "looking down at the open book", or "hands
+naturally gripping the handlebars" make the intended pose concrete in a way adjectives never do.
+
 Choose depth of field by what the image needs to prove. Shallow depth of field isolates a subject —
 right for a portrait or a product, wrong for a scene whose whole point is that a real, recognizable
 place is still legible: a wide environmental or architectural shot needs enough of the frame in
 focus that the identity anchors read clearly, not just the nearest object.
 
-Detailed camera specs (exact lens, f-stop) are interpreted loosely. Use them to set an overall look,
-not as a technical instruction the model will honour precisely.
+Camera specs are *"cues for appearance, not a guarantee of exact physical simulation."* Use them to
+set an overall look, not as a technical instruction the model will honour precisely.
 
 Wide, cinematic, low-light, rain or neon scenes need *extra* detail about scale, atmosphere and
-color — they degrade fastest when underspecified.
+color — specify those instead of relying on mood words alone. They degrade fastest when
+underspecified.
 
 ## Style and materials
 
@@ -134,8 +206,6 @@ For photorealism, include the word **"photorealistic"** explicitly.
 
 Add targeted quality levers only when they earn their place — film grain, textured brushstrokes,
 macro detail. Piling them all on flattens the result.
-
-When people appear, describe scale, body framing, gaze, and how they interact with objects.
 
 ## Fighting the synthetic look
 
@@ -237,6 +307,8 @@ OpenAI documents these. Design the prompt around them rather than hoping:
 - **Precise text placement and clarity** can still fail, especially at small sizes.
 - **Layout-sensitive compositions** — the model may not place elements exactly where specified in
   rigid grids. Describe hierarchy and relative position rather than pixel coordinates.
+- **Visual consistency across multiple generations** is hard to hold. A JSON style lock helps; it
+  does not guarantee.
 - Complex prompts can take up to two minutes to process.
 
 ## Transparent backgrounds
@@ -248,13 +320,31 @@ fully transparent background. For edits, re-state the transparent background eve
 Ask for "clean alpha edges, no halos or fringing, no solid backdrop, no checkerboard, no scenery, no
 drop shadow" — otherwise the model invents a background substitute.
 
+Then verify it actually worked: *"Check the decoded image's alpha channel, including hair, glass,
+shadows, and object edges."* A painted checkerboard is not transparency, and it is a common enough
+substitution that the check is worth doing every time.
+
 ## Iterating on a result
 
 Refine with small, single-change follow-ups: "make the lighting warmer", "remove the extra tree".
 Do not rewrite the whole prompt to fix one thing.
 
+The working loop: *"Pass the previous output as the next edit input, request one change, and repeat
+the details to preserve."*
+
 References like "same style as before" work, but re-specify the critical details as soon as they
-start to drift. Edits accumulate error; restating invariants resets it.
+start to drift. *"Repeated edits can still change details you intended to preserve. Restate those
+constraints and inspect each result."*
+
+## Checking the output
+
+Before using a result, run it against the requirements — OpenAI's own list:
+
+- Is required text accurate and legible?
+- Are diagram labels and relationships correct?
+- Do identities, product shapes, labels, and reference details remain intact?
+- Did the edit change only what you requested?
+- If transparency is required, does the file contain a real alpha channel?
 
 ## Worked examples
 

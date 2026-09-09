@@ -9,7 +9,7 @@ transformation"), each covering a real use case none of the 26 addressed.
 Each entry gives you a skeleton to fill and the failure modes that template actually hits. The
 skeleton is scaffolding for *your* thinking, not text to hand the user verbatim — fill it, then
 rewrite it as flowing prose in the scene → subject → details → constraints order that
-`gpt-image-2.md` prescribes.
+`gpt-image.md` prescribes.
 
 **A note on camera parameters.** The source guide claims the model "eats up" precise specs like
 `f/1.4` and `50mm`. OpenAI's own guide says camera specs are interpreted loosely and should set an
@@ -628,7 +628,7 @@ No duplicated text. [Plus any exclusions specific to the theme.]
   on a 1980s music program") and let the wardrobe section carry the aesthetic.
 - Resolve every alternative. "A or B" phrased as normal prose is the same failure as leaving a
   `[bracket]` placeholder — an unresolved decision the model has to make for you. Pick one option per
-  garment, one color, one pose; see "No unresolved alternatives" in `gpt-image-2.md`.
+  garment, one color, one pose; see "No unresolved alternatives" in `gpt-image.md`.
 - Height cannot be verified from a single photo and isn't something the model can preserve
   literally — use shoulder width, build and proportion instead.
 
@@ -730,7 +730,7 @@ figures anywhere in the frame, no crowd.
   explicitly rather than trusting the number alone.
 - If the persistent state itself is physically surprising — water that never drained, a structure
   standing when it should have fallen — name why it lasted, not only that it did. See "Fighting the
-  synthetic look" in `gpt-image-2.md`; describing the result without its cause reads as an
+  synthetic look" in `gpt-image.md`; describing the result without its cause reads as an
   inconsistency the model has to paper over, not a fact it can render. But name it once, as a
   settled fact — don't also describe the same element as still in the middle of changing. "Stayed
   flooded because drainage failed" and "floodwater that is still slowly receding" are two different
@@ -739,11 +739,11 @@ figures anywhere in the frame, no crowd.
   administrative geography of a real place is encyclopedia prose, not a visual instruction — it
   competes with the identity anchors for the model's attention without giving it anything to render.
 - Keep the scale of any destruction restrained and mundane unless spectacle is genuinely the goal —
-  see "Keep destruction mundane, not spectacular" in `gpt-image-2.md`. Old damage and giant collapsed
+  see "Keep destruction mundane, not spectacular" in `gpt-image.md`. Old damage and giant collapsed
   rubble are not the same thing; a scene can nail the former and still look like a disaster-movie
   poster without this constraint.
 - If people appear, make them incidental discoveries, not the photo's subject. Small in the frame,
-  mid-activity, unposed — see "Fighting the synthetic look" in `gpt-image-2.md`.
+  mid-activity, unposed — see "Fighting the synthetic look" in `gpt-image.md`.
 - A stated headcount needs to be repeated as an exclusion in the constraints block, not only stated
   once where the figures are introduced — "exactly two, no additional people, no crowd" close to the
   other exclusions is what actually holds the count.
