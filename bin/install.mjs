@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-const skillName = 'gpt-image-2-style-library';
+const skillName = 'gpt-image-prompt-studio';
 const args = process.argv.slice(2);
 const commandOrTarget = args[0] || 'install';
 const allowedCommands = new Set(['install', 'sync']);
@@ -17,11 +17,11 @@ if (!allowedCommands.has(commandOrTarget)) {
 }
 
 const usage = [
-  'Usage: gpt-image-2-style-library install [all|codex|claude-code|agents]',
+  'Usage: gpt-image-prompt-studio install [all|codex|claude-code|agents]',
   'Examples:',
-  '  gpt-image-2-style-library install all',
-  '  gpt-image-2-style-library install claude-code',
-  '  gpt-image-2-style-library install codex'
+  '  gpt-image-prompt-studio install all',
+  '  gpt-image-prompt-studio install claude-code',
+  '  gpt-image-prompt-studio install codex'
 ].join('\n');
 
 if (!allowedCommands.has(command)) {
@@ -30,11 +30,7 @@ if (!allowedCommands.has(command)) {
 }
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const requiredEntries = ['SKILL.md', 'agents', 'references'];
-const optionalEntries = ['assets'];
-const entries = [...requiredEntries, ...optionalEntries].filter((entry) =>
-  existsSync(join(packageRoot, entry))
-);
+const entries = ['SKILL.md', 'agents', 'assets', 'references'];
 const targetDefinitions = {
   codex: {
     label: 'Codex',
@@ -58,7 +54,7 @@ const targetAliases = {
   shared: ['agents']
 };
 
-for (const entry of requiredEntries) {
+for (const entry of entries) {
   const source = join(packageRoot, entry);
   if (!existsSync(source)) {
     throw new Error(`Missing package entry: ${entry}`);

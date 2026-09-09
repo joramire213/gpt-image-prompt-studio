@@ -47,12 +47,12 @@ See `LICENSE` for the original MIT license and attribution.
 **Via the [skills CLI](https://skills.sh):**
 
 ```bash
-npx skills add joramire213/gpt-image-2-style-library -g -y
+npx skills add joramire213/gpt-image-prompt-studio -g -y
 ```
 
 **Manually**, if the CLI doesn't pick it up automatically: copy `SKILL.md`, `references/`, `agents/`
 and `assets/` from this repo into your agent's skills folder — for Claude Code, that's
-`~/.claude/skills/gpt-image-2-style-library/`.
+`~/.claude/skills/gpt-image-prompt-studio/`.
 
 **Via the bundled installer**, from a local clone:
 
