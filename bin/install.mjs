@@ -30,7 +30,11 @@ if (!allowedCommands.has(command)) {
 }
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const entries = ['SKILL.md', 'agents', 'assets', 'references'];
+const requiredEntries = ['SKILL.md', 'agents', 'references'];
+const optionalEntries = ['assets'];
+const entries = [...requiredEntries, ...optionalEntries].filter((entry) =>
+  existsSync(join(packageRoot, entry))
+);
 const targetDefinitions = {
   codex: {
     label: 'Codex',
@@ -54,7 +58,7 @@ const targetAliases = {
   shared: ['agents']
 };
 
-for (const entry of entries) {
+for (const entry of requiredEntries) {
   const source = join(packageRoot, entry);
   if (!existsSync(source)) {
     throw new Error(`Missing package entry: ${entry}`);
