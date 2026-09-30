@@ -1,6 +1,6 @@
 ---
 name: gpt-image-prompt-studio
-description: "Turn a rough image idea into a production-ready prompt for OpenAI's GPT Image models (2.5 Sunburst and Flare, and GPT Image 2), using 28 industrial templates and 7 worked examples distilled from a corpus of 541 real cases, plus OpenAI's own prompting rules for the model. Produces the prompt text only — it never generates the image. Use whenever someone wants an image prompt, wants an existing image prompt improved or rewritten, or describes an image they intend to generate — posters, infographics, diagrams, product shots, logos and brand boards, UI mockups, character sheets, photorealistic scenes, illustrations, publication layouts. Requests usually arrive in Spanish (un prompt para generar una imagen, hazme un prompt de imagen, necesito un poster, una infografia, un mockup, un logo); trigger on those as well."
+description: "Turn a rough image idea into a production-ready prompt for OpenAI's GPT Image models (2.5 Sunburst and Flare, and GPT Image 2), using 30 industrial templates, a full editing playbook, and 7 worked examples distilled from a corpus of 541 real cases, plus OpenAI's own prompting rules for the model. Produces the prompt text only — it never generates the image. Use whenever someone wants an image prompt, wants an existing image prompt improved or rewritten, or describes an image they intend to generate — posters, infographics, diagrams, pitch-deck slides, product shots, logos and brand boards, UI mockups, character sheets, photorealistic scenes, illustrations, comics, publication layouts. Use it equally for editing an image the user already has: removing or swapping an object, changing clothing while preserving identity, cutting a product out onto transparency, combining two reference images, translating a diagram in place, turning a sketch photorealistic, or keeping a character consistent across a series. Requests usually arrive in Spanish (un prompt para generar una imagen, hazme un prompt de imagen, necesito un poster, una infografia, un mockup, un logo, quitale el fondo a esta foto, cambiale la ropa, edita esta imagen); trigger on those as well."
 ---
 
 # GPT Image Prompt Studio
@@ -29,9 +29,13 @@ in whatever language the user gave it, verbatim.
 - `references/gpt-image.md` — the model's real capabilities: valid sizes, aspect ratio limits,
   quality levels, how to make text render correctly, how to phrase exclusions, documented failure
   modes. Read it before writing any prompt. Never invent a size this file does not permit.
-- `references/templates.md` — 28 template skeletons with the pitfall guide for each, plus a set of
+- `references/templates.md` — 30 template skeletons with the pitfall guide for each, plus a set of
   universal pitfalls. Read it to pick a direction and to inherit the failure modes that template
   actually hits. The skeletons are scaffolding for your thinking, never text to hand the user.
+- `references/editing.md` — for changing an image the user already has, rather than creating one.
+  Editing is a different craft: what you leave unsaid in a generation prompt is a blank the model
+  fills, but what you leave unsaid in an edit prompt is something that already exists and may be
+  destroyed. Read this instead of `templates.md` whenever there is an input image to modify.
 - `references/examples.md` — seven finished prompts mined from a corpus of 541 documented cases,
   each annotated with the technique it demonstrates, plus the four prompt shapes in real use. Read
   it when you are unsure how much detail is enough or which shape fits. A finished prompt teaches
@@ -39,14 +43,18 @@ in whatever language the user gave it, verbatim.
 
 ## Workflow
 
-1. **Classify.** What is the user making? Match to a template family in `templates.md`. Pick the
+1. **Generate or edit?** Ask this first, because it decides which reference file you work from. If
+   the user has an image they want changed — a photo to restyle, a diagram to translate, an object
+   to remove, a product to cut out — that is an edit: go to `editing.md` and follow its spine.
+   Everything else is generation: continue below.
+2. **Classify.** What is the user making? Match to a template family in `templates.md`. Pick the
    strongest match and commit. Only surface a choice when two families would produce genuinely
    different images, and then recommend one rather than offering a menu.
-2. **Decide ship vs ask** using the calibration rule under Intake. Shipping is the default. If
+3. **Decide ship vs ask** using the calibration rule under Intake. Shipping is the default. If
    something is genuinely missing, you still ship — with flagged defaults or a stand-in — and ask
    alongside, in a single message.
-3. **Fix the dimensions.** Follow the sizing procedure below and validate before writing.
-4. **Pick a shape, then draft** in the order `gpt-image.md` prescribes: scene and context →
+4. **Fix the dimensions.** Follow the sizing procedure below and validate before writing.
+5. **Pick a shape, then draft** in the order `gpt-image.md` prescribes: scene and context →
    subject → key details → constraints block. The shape is a real decision, not a default:
 
    | Shape | When |
@@ -58,8 +66,8 @@ in whatever language the user gave it, verbatim.
 
    OpenAI's guide confirms all four work. The failure mode is not choosing — an unstructured pile of
    adjectives is what produces mush. See `examples.md` for one worked prompt per shape.
-5. **Verify** against the checklist below.
-6. **Deliver** in the output format below, surfacing the pitfalls that apply so the user knows what
+6. **Verify** against the checklist below.
+7. **Deliver** in the output format below, surfacing the pitfalls that apply so the user knows what
    to inspect in the render.
 
 ## Intake

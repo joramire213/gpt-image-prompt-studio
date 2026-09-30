@@ -1,10 +1,14 @@
 # Prompt Template Library
 
+Templates for **generating** an image from nothing. To change an image the user already has, go to
+`editing.md` instead — it is a different craft and these skeletons mislead there.
+
 26 industrial templates distilled from ~390 real GPT Image 2 cases, plus the pitfall guide for
 each — rescued from the source project's `docs/templates.md`, translated from Chinese, and adapted
-away from China-specific platforms and aesthetics — plus two templates added later from unrelated
-prompt-engineering exercises ("Real place, transformed", "Identity-preserving persona
-transformation"), each covering a real use case none of the 26 addressed.
+away from China-specific platforms and aesthetics — plus four added later: "Real place,
+transformed" and "Identity-preserving persona transformation" from prompt-engineering exercises,
+and "Pitch-deck slide" and "Sequential panels" from OpenAI's own prompting guide. Each covers a
+real use case none of the original 26 addressed.
 
 Each entry gives you a skeleton to fill and the failure modes that template actually hits. The
 skeleton is scaffolding for *your* thinking, not text to hand the user verbatim — fill it, then
@@ -21,7 +25,7 @@ honours them literally.
 | Category | Templates |
 |---|---|
 | [UI & interfaces](#ui--interfaces) | App/web screen · Social post screenshot · Livestream overlay |
-| [Charts & infographics](#charts--infographics) | Infographic engine · Scientific scale diagram |
+| [Charts & infographics](#charts--infographics) | Infographic engine · Scientific scale diagram · Pitch-deck slide |
 | [Posters & typography](#posters--typography) | Poster layout · Sports campaign · Conceptual typography · Double exposure portrait · Premium science poster |
 | [Products & e-commerce](#products--e-commerce) | Product hero shot · Personalized recommendation report |
 | [Brand & identity](#brand--identity) | Brand identity package · Touchpoint board · Brand-enveloped product ad · Brand persona comic |
@@ -29,7 +33,7 @@ honours them literally.
 | [Photography & realism](#photography--realism) | Realistic photography · Candid street moment |
 | [Illustration & art](#illustration--art) | Illustration style |
 | [Characters & people](#characters--people) | Character design sheet · 3D collectible toy · Identity-preserving persona transformation |
-| [Scenes & storytelling](#scenes--storytelling) | Narrative scene · Real place, transformed |
+| [Scenes & storytelling](#scenes--storytelling) | Narrative scene · Sequential panels · Real place, transformed |
 | [Historical & period](#historical--period) | Period piece |
 | [Documents & publishing](#documents--publishing) | Publication layout |
 | [Other](#other) | Concept product breakdown |
@@ -57,6 +61,10 @@ Output: high-fidelity UI screenshot, all text legible, aspect ratio [9:16 / 16:9
   get garbled buttons and nonsense glyphs.
 - Non-phone screens have fixed ratios — car dashboards, smart-home panels, TV UI often need 21:9 or
   16:9. Put the ratio at the very top of the prompt or the model defaults to 9:16 phone.
+- Describe the product as if it already exists and shipped, and avoid concept-art vocabulary
+  ("futuristic", "stunning UI concept", "next-gen"). Those words pull the render toward a designer's
+  portfolio piece — glowing gradients, impossible layouts — rather than an interface someone could
+  actually use. Focus instead on layout, hierarchy, spacing and real interface furniture.
 
 ### Social post screenshot
 
@@ -132,6 +140,50 @@ Title: "[TOPIC]: AT EVERY SCALE" or "ZOOM: THE WORLD OF [TOPIC]".
 Style: scientific editorial infographic, precise macro light, clean hierarchy, short readable text.
 Constraints: no generic magnifying-glass icons, no identically sized frames, no long body copy.
 ```
+
+**Pitfalls**
+
+- For anything meant to teach, write the prompt as an instructional design brief rather than an
+  illustration request: name the audience, the lesson objective, the visual format, the labels that
+  must appear, and the scientific constraints. "A diagram about photosynthesis" and "a classroom
+  handout for high-school students showing how light, water and CO2 become glucose, labelled with
+  these six molecules" are different briefs, and only the second is checkable.
+- List the required components explicitly and say what must not appear. Accuracy is not something
+  you can verify by looking at whether it is pretty.
+- Use `high` quality. Dense labels are exactly the case the quality ladder exists for.
+
+### Pitch-deck slide
+
+```
+Create one [pitch-deck / report] slide titled "[exact title]".
+
+Canvas and hierarchy: [background], [typeface family], [layout description]. Landscape.
+
+The slide contains:
+- [Diagram type] showing [what], in [palette]
+- The real figures: [label]: [value], [label]: [value], [label]: [value]
+- [Chart type] showing [what], spanning [range]
+- Footnotes: "[exact footnote]" and "[exact footnote]"
+- [Logo placeholder position]
+
+Visual language: highly readable text, clear data hierarchy, polished spacing, professional
+[sector] visual style.
+
+Avoid clip art, stock photography, gradients, drop shadows, decorative elements, or anything that
+feels generic or overdesigned.
+```
+
+**Pitfalls**
+
+- Write it as an artifact spec, not an illustration request. Name the exact deliverable, define the
+  canvas and hierarchy, and supply the real text and numbers. A slide is a document that happens to
+  be rendered as an image.
+- Put the actual figures in the prompt. A model asked for "a bar chart showing growth" invents
+  numbers; a model given the numbers renders them. Then verify them, because invented data that
+  looks plausible in a deck is worse than data that is obviously missing.
+- Landscape, and `high` quality — slides carry legends, axes and footnotes, which is small text.
+- Watch the string count. A slide with a title, three figures, chart labels, two footnotes and axis
+  ticks approaches the ceiling described in the verification checklist faster than it looks.
 
 ---
 
@@ -651,6 +703,37 @@ Style: [technique]. Details that support the story: [elements].
   "is collapsing", "has just lit the torch", "is turning at the sound".
 - Use camera grammar for drama. Low angle for power, Dutch angle for unease.
 - No generic fantasy backgrounds; keep narrative cues visible inside the frame.
+
+### Sequential panels
+
+A story told across several panels in one image — comic strip, storyboard, before-and-after,
+process sequence. Distinct from a narrative scene because the unit of specification is the panel,
+not the image.
+
+```
+Create a [vertical / horizontal] [comic-style strip / storyboard] with [N] panels.
+
+Panel 1: [what is happening — one clear visual beat, with the subject's position and expression].
+Panel 2: [the next beat, and what changed from panel 1].
+Panel 3: [the next beat].
+Panel 4: [the resolution].
+
+Style: [technique], consistent across all panels.
+Constraints: same character design in every panel, [no text / only the quoted dialogue], no
+watermarks.
+```
+
+**Pitfalls**
+
+- One clear visual beat per panel, described as an action rather than a situation. The sequence has
+  to be readable without captions, which means each panel must show a *change* from the one before.
+- Say the panel count in the first line and keep it low. Four panels render far more reliably than
+  eight, and eight small panels also multiplies every text and face into a smaller area.
+- State character consistency as a constraint. Across panels the model drifts exactly the way it
+  does across separate generations — same problem, same fix as in `editing.md` under "Keep a
+  character consistent".
+- If the panels carry dialogue, every balloon is a string. Count them against the text ceiling in
+  the verification checklist before promising the user a talky strip.
 
 ### Real place, transformed
 

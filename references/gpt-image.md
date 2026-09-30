@@ -36,7 +36,10 @@ Three models are current. All three take text and image input, output images, an
 |---|---|---|
 | `gpt-image-2.5-sunburst` | `-2026-09-08` | Base model, optimized for quality. Higher image quality than GPT Image 2. Slower. |
 | `gpt-image-2.5-flare` | `-2026-09-08` | Small model, optimized for speed. Quality comparable to GPT Image 2, up to 50% lower latency. |
-| `gpt-image-2` | `-2026-04-21` | Previous generation. Still available, not deprecated. |
+| `gpt-image-2` | `-2026-04-21` | Previous generation. Still available, not deprecated. Quality ladder stops at `high`. |
+
+Older generations are on their way out and should not be recommended: `gpt-image-1.5` shuts down
+**2026-12-01** and `gpt-image-1` **2026-10-23**.
 
 **Both 2.5 models cost exactly the same**, and the same as GPT Image 2: $5 per million input text
 tokens ($1.25 cached), $8 per million input image tokens ($2 cached), $30 per million output image
@@ -75,18 +78,26 @@ constraints that are **unchanged from GPT Image 2**:
 - Maximum edge: **3840 px**.
 - Aspect ratio must fall between **1:3 and 3:1**. Nothing more extreme renders.
 - Total pixels between **655,360 and 8,294,400**.
-- Reliable up to **2560x1440**. Above that, quality degrades.
+- Above **3,686,400 px** — the pixel count of `2560x1440` — output is **experimental**.
 
 Common sizes worth naming:
 
-| Use | Size | Ratio |
-|---|---|---|
-| Square (social, avatars, product) | `1024x1024` | 1:1 |
-| Portrait (stories, posters, phone) | `1024x1536` | 2:3 |
-| Landscape (slides, banners, diagrams) | `1536x1024` | 3:2 |
-| Native widescreen | `1536x864` | 16:9 |
-| Native vertical | `864x1536` | 9:16 |
-| 2K / QHD (top of the reliable range) | `2560x1440` | 16:9 |
+| Use | Size | Ratio | Note |
+|---|---|---|---|
+| Square (social, avatars, product) | `1024x1024` | 1:1 | |
+| Portrait (stories, posters, phone) | `1024x1536` | 2:3 | |
+| Landscape (slides, banners, diagrams) | `1536x1024` | 3:2 | |
+| Native widescreen | `1536x864` | 16:9 | |
+| Native vertical | `864x1536` | 9:16 | |
+| 2K landscape | `2048x1152` | 16:9 | |
+| Top of the non-experimental range | `2560x1440` | 16:9 | |
+| 2K square | `2048x2048` | 1:1 | experimental |
+| 4K landscape | `3840x2160` | 16:9 | experimental |
+| 4K portrait | `2160x3840` | 9:16 | experimental |
+
+The last three are listed by OpenAI as common sizes *and* sit above the experimental threshold —
+both are true. They are legitimate for print or large-format work; just name the tradeoff when you
+pick one. "Experimental" means the quality guarantee stops there, not that it fails.
 
 A prompt written for a human to paste into ChatGPT has no `size` flag, so state the ratio in plain
 language: `Aspect ratio 16:9.` Pick the shape that matches where the image will actually live
@@ -94,11 +105,14 @@ rather than defaulting to square.
 
 ## Quality levels
 
-`low`, `medium`, `high`, `xhigh`, `max`, `auto`. The last two are **new with 2.5** and are not
-supported by earlier GPT Image models.
+`low`, `medium`, `high`, `xhigh`, `max`, `auto`. `xhigh` and `max` are **new with 2.5** and are not
+supported by earlier GPT Image models, whose ladder stops at `high`.
+
+`auto` is the API default. Everything below is about what to *choose* deliberately, which is a
+different question from what happens when you choose nothing.
 
 - `low` — fast exploration, high volume, throwaway drafts.
-- `medium` — the general-purpose default.
+- `medium` — the sensible general-purpose pick.
 - `high` — small text, dense information panels, multi-font layouts, infographics,
   identity-sensitive edits. If the image carries more than a headline's worth of text, say high.
 - `xhigh` / `max` — reach for these only with a reason. OpenAI is explicit: *"Use xhigh or max only

@@ -8,7 +8,7 @@ persona transformation from a reference photo — and it hands back a finished, 
 
 Built on:
 
-- **28 industrial prompt templates**, each with a skeleton and a documented list of failure modes
+- **30 industrial prompt templates**, each with a skeleton and a documented list of failure modes
   ("pitfalls"), covering posters, UI screens, brand identity, architecture, photography,
   illustration, characters, historical scenes, documents, and more.
 - **The models' real capabilities**, sourced from OpenAI's own prompting guide: valid sizes and
