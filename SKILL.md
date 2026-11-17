@@ -1,13 +1,14 @@
 ---
 name: gpt-image-prompt-studio
-description: "Turn a rough image idea into a production-ready prompt for OpenAI's GPT Image models (2.5 Sunburst and Flare, and GPT Image 2), using 30 industrial templates, a full editing playbook, and 7 worked examples distilled from a corpus of 541 real cases, plus OpenAI's own prompting rules for the model. Produces the prompt text only — it never generates the image. Use whenever someone wants an image prompt, wants an existing image prompt improved or rewritten, or describes an image they intend to generate — posters, infographics, diagrams, pitch-deck slides, product shots, logos and brand boards, UI mockups, character sheets, photorealistic scenes, illustrations, comics, publication layouts. Use it equally for editing an image the user already has: removing or swapping an object, changing clothing while preserving identity, cutting a product out onto transparency, combining two reference images, translating a diagram in place, turning a sketch photorealistic, or keeping a character consistent across a series. Requests usually arrive in Spanish (un prompt para generar una imagen, hazme un prompt de imagen, necesito un poster, una infografia, un mockup, un logo, quitale el fondo a esta foto, cambiale la ropa, edita esta imagen); trigger on those as well."
+description: "Turn a rough image idea into a production-ready prompt for OpenAI's GPT Image models (2.6 and 2.5 Sunburst/Flare, GPT Image 2): 30 templates, an editing playbook, worked examples and OpenAI's own prompting rules. Writes the prompt text only, never the image. Use whenever someone wants an image prompt or wants one improved: posters, infographics, diagrams, slides, product shots, logos, UI mockups, characters, photorealistic scenes, illustrations, comics. Also covers SVG vector output, looping animated GIFs, and edits of an existing image: removing or swapping objects, changing clothing while keeping identity, transparent cutouts, combining references, markup edits, translating in place, character consistency. Requests usually arrive in Spanish (hazme un prompt de imagen, necesito un poster, un logo en SVG, un GIF animado, anima esta imagen, quitale el fondo, cambiale la ropa, edita lo que encerre en rojo); trigger on those too."
 ---
 
 # GPT Image Prompt Studio
 
 Turn a user's image intent into a production-ready prompt for OpenAI's GPT Image models. The current
-lineup is `gpt-image-2.5-sunburst` (quality), `gpt-image-2.5-flare` (speed) and the still-available
-`gpt-image-2`; `references/gpt-image.md` has the full comparison. The deliverable is **the prompt
+lineup is `gpt-image-2.6-sunburst` (detail, precise edits) and `gpt-image-2.6-flare` (speed), with
+the 2.5 pair still available and `gpt-image-2` shutting down 2027-02-10; `references/gpt-image.md`
+has the full comparison. The deliverable is **the prompt
 text, not the image** — the user takes it elsewhere to render, so the prompt has to stand alone with
 no follow-up conversation available to rescue it.
 
@@ -47,6 +48,10 @@ in whatever language the user gave it, verbatim.
    the user has an image they want changed — a photo to restyle, a diagram to translate, an object
    to remove, a product to cut out — that is an edit: go to `editing.md` and follow its spine.
    Everything else is generation: continue below.
+   **Then: still image, vector or animation?** Raster is the default and needs no question. If the
+   user asks for an SVG or vector file, or for a GIF or anything that moves, read the SVG or GIF
+   section of `gpt-image.md` before drafting: both change what the prompt must say, and SVG output
+   exists only through the API, not confirmed in ChatGPT, so say that when the user is on ChatGPT.
 2. **Classify.** What is the user making? Match to a template family in `templates.md`. Pick the
    strongest match and commit. Only surface a choice when two families would produce genuinely
    different images, and then recommend one rather than offering a menu.
@@ -167,7 +172,9 @@ correct it in one word.
 
 - Both edges divisible by 16.
 - Aspect ratio between 1:3 and 3:1 inclusive.
-- Total pixels between 655,360 and 8,294,400.
+- Total pixels between 655,360 and 8,294,400. **GIF exception:** `size` is one frame, and the
+  minimum does not apply per frame — OpenAI's own GIF example is `512x512`. What must fit is
+  `frame_count × frame pixels` within 8,294,400.
 - Neither edge above 3840. Above `2560x1440` the model is experimental — only go there if the user
   asked for it, and say so.
 
@@ -178,15 +185,20 @@ changed and why.
 multiple type sizes, an infographic, a document layout, or identity-sensitive detail. `medium`
 otherwise. `low` only for throwaway exploration.
 
-GPT Image 2.5 added `xhigh` and `max` above those. Do not reach for them by default — OpenAI's own
+GPT Image 2.5 and 2.6 add `xhigh` and `max` above those. Do not reach for them by default — OpenAI's own
 guidance is that they are worth it *"only when they improve an unmet quality requirement within your
 latency budget"*, and that a higher setting does not guarantee a better result. Name one when the
 user has said the piece is going to print, or when `high` has already been tried and fell short on
 something specific. Otherwise `high` remains the top of the normal range.
 
 Say which model the size and quality assume, since a `high` on Flare is not a `high` on Sunburst —
-`gpt-image-2.5-sunburst` is the sensible default for anything where quality decides, and
-`gpt-image-2.5-flare` when the user wants speed or volume. They cost the same.
+`gpt-image-2.6-sunburst` is the sensible default for anything where quality decides or an edit must
+be precise, and `gpt-image-2.6-flare` when the user wants speed or volume. They cost the same.
+
+**5. Set complexity only when it matters** (2.6 only). It controls how much the model plans before
+rendering, separately from quality, and defaults to `high`. Name `low` for an edit that changes one
+detail, since high complexity can introduce changes nobody asked for. Leave it at the default for
+generation; it earns its keep when the prompt leaves design decisions open.
 
 ## Verification before delivering
 
@@ -218,7 +230,14 @@ preference.
 
 Lead with:
 
-**Plantilla:** `<template name>` · **Modelo:** `<gpt-image-2.5-sunburst | gpt-image-2.5-flare>` · **Tamaño:** `<WIDTHxHEIGHT>` (`<ratio>`) · **Calidad:** `<low | medium | high | xhigh | max>`
+**Plantilla:** `<template name>` · **Modelo:** `<gpt-image-2.6-sunburst | gpt-image-2.6-flare>` · **Tamaño:** `<WIDTHxHEIGHT>` (`<ratio>`) · **Calidad:** `<low | medium | high | xhigh | max>`
+
+When the user works in ChatGPT, write **Modelo:** `ChatGPT Images 2.6` and drop **Calidad**, since
+neither can be chosen there; the size becomes a plain-language ratio inside the prompt.
+
+Append **Complejidad:** `<low | medium>` only when you set it below the default, and **Formato:**
+`svg` or **Formato:** `gif` (with `frame_count` and `frame_duration_ms`) only when the output is not
+a raster image.
 
 Then the prompt in a fenced code block, in English, ready to copy with no edits.
 
@@ -228,6 +247,9 @@ Then, in Spanish and briefly:
 - **Qué vigilar en el resultado** — the pitfalls from the chosen template that actually apply here,
   phrased as what to look for in the render.
 - **Supuestos** — only if you had to assume something. Name it so it can be corrected in one word.
+- **Parámetros de API** — only when the user works through the API and the request needs more than
+  model, size and quality: the SVG or GIF fields, `background`, `complexity`, or the markup overlay
+  mechanics. One line each.
 
 When the user asks for several concepts at once, reuse one template and vary subject, composition,
 palette and scene so the set holds together.

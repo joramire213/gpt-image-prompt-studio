@@ -6,7 +6,7 @@ take; this file tells you how to phrase it so the model executes it faithfully.
 
 Sources: OpenAI's [Image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting),
 the [image generation guide](https://developers.openai.com/api/docs/guides/image-generation), and the
-per-model pages. Current as of 2026-09-09.
+per-model pages and the deprecations page. Current as of 2026-11-16.
 
 ## Contents
 
@@ -14,6 +14,7 @@ per-model pages. Current as of 2026-09-09.
 - [Choosing a model](#choosing-a-model)
 - [Size and aspect ratio](#size-and-aspect-ratio)
 - [Quality levels](#quality-levels)
+- [Complexity](#complexity)
 - [Prompt order](#prompt-order)
 - [Rendering text inside the image](#rendering-text-inside-the-image)
 - [Working from reference images](#working-from-reference-images)
@@ -23,32 +24,46 @@ per-model pages. Current as of 2026-09-09.
 - [Constraints and exclusions](#constraints-and-exclusions)
 - [Known weaknesses](#known-weaknesses)
 - [Transparent backgrounds](#transparent-backgrounds)
+- [Vector (SVG) output](#vector-svg-output)
+- [Animated GIF output](#animated-gif-output)
 - [Iterating on a result](#iterating-on-a-result)
 - [Checking the output](#checking-the-output)
 - [Worked examples](#worked-examples)
 
 ## The lineup
 
-Three models are current. All three take text and image input, output images, and support both
-`/v1/images/generations` and `/v1/images/edits` (inpainting).
+GPT Image 2.6 launched 2026-11-04 and is the current generation. All models below take text and
+image input, output images, and support both `/v1/images/generations` and `/v1/images/edits`.
 
 | Model | Snapshot | Character |
 |---|---|---|
-| `gpt-image-2.5-sunburst` | `-2026-09-08` | Base model, optimized for quality. Higher image quality than GPT Image 2. Slower. |
-| `gpt-image-2.5-flare` | `-2026-09-08` | Small model, optimized for speed. Quality comparable to GPT Image 2, up to 50% lower latency. |
-| `gpt-image-2` | `-2026-04-21` | Previous generation. Still available, not deprecated. Quality ladder stops at `high`. |
+| `gpt-image-2.6-sunburst` | none listed | Base model, *"for workflows that need more detail or precise edits."* The default. |
+| `gpt-image-2.6-flare` | none listed | Smaller model, *"for workflows where speed matters most."* |
+| `gpt-image-2.5-sunburst` | `-2026-09-08` | Previous generation, quality-oriented. Still available, no deprecation notice. |
+| `gpt-image-2.5-flare` | `-2026-09-08` | Previous generation, speed-oriented. Still available, no deprecation notice. |
+| `gpt-image-2` | `-2026-04-21` | Deprecated 2026-11-10, **shuts down 2027-02-10**. Quality ladder stops at `high`. |
 
-Older generations are on their way out and should not be recommended: `gpt-image-1.5` shuts down
-**2026-12-01** and `gpt-image-1` **2026-10-23**.
+Only 2.6 has `complexity`, SVG output and animated GIF output. Markup-guided edits exist on both
+2.6 and 2.5. The 2.6 model pages list no dated snapshot, so the model ID is the identifier to use.
 
-**Both 2.5 models cost exactly the same**, and the same as GPT Image 2: $5 per million input text
-tokens ($1.25 cached), $8 per million input image tokens ($2 cached), $30 per million output image
-tokens. Choosing Flare over Sunburst buys latency, never money — OpenAI's own guide warns against
-assuming otherwise: *"Confirm current pricing rather than assuming the faster model costs less."*
+Do not recommend anything older: `gpt-image-1.5`, `gpt-image-1-mini` and `chatgpt-image-latest`
+shut down **2026-12-01**; `gpt-image-1` already shut down on 2026-10-23. OpenAI names the 2.6 pair
+as the replacement for all of them.
 
-In ChatGPT, image generation runs on "ChatGPT Images 2.5" across all plans.
+**Sunburst and Flare cost exactly the same**, in 2.6 as in 2.5: $5 per million input text tokens
+($1.25 cached), $8 per million input image tokens ($2 cached), $30 per million output image tokens.
+Choosing Flare over Sunburst buys latency, never money — OpenAI's own guide warns against assuming
+otherwise: *"Confirm current pricing rather than assuming the faster model costs less."*
 
-What 2.5 improved over 2.0: more natural lighting and richer textures, better preservation of
+In ChatGPT, image generation runs on "ChatGPT Images 2.6" across all plans. ChatGPT also lets the
+user draw on an image to mark where an edit goes (the counterpart of API markup), and animated GIF
+creation is rolling out gradually in the app. SVG output is documented only for the API.
+
+What 2.6 improved over 2.5, per OpenAI: faster generation, and better preservation of details
+during edits — a character's clothing surviving a background change, for instance. OpenAI publishes
+no side-by-side quality benchmark, so treat these as the vendor's claims.
+
+What 2.5 had improved over 2.0: more natural lighting and richer textures, better preservation of
 subjects from the user's reference photos, more reliable adherence to editing instructions across
 multiple turns, and sketch- and template-based generation.
 
@@ -58,12 +73,16 @@ instructions, not one that matches keywords.
 
 ## Choosing a model
 
-OpenAI's stated decision rule:
+OpenAI's stated decision rule, which carries over unchanged to 2.6:
 
 - If GPT Image 2's quality already met your bar, **start with Flare** and see how much latency you
   can recover.
 - If you have a hard case where GPT Image 2 fell short, **start with Sunburst**, establish the
-  quality first, then try stepping down.
+  quality first, then test Flare with the same prompts, references, sizes and quality.
+
+Between generations, prefer 2.6 for new work: same price, and the only line with `complexity`, SVG
+and GIF. Keep a user on 2.5 only when they already have an approved 2.5 workflow they do not want
+to re-validate.
 
 One caution worth carrying: *"The same quality label does not imply the same image quality or
 response time across models."* A `high` on Flare is not a `high` on Sunburst. Compare by running
@@ -79,6 +98,10 @@ constraints that are **unchanged from GPT Image 2**:
 - Aspect ratio must fall between **1:3 and 3:1**. Nothing more extreme renders.
 - Total pixels between **655,360 and 8,294,400**.
 - Above **3,686,400 px** — the pixel count of `2560x1440` — output is **experimental**.
+
+These are documented for 2.5. The 2.6 guide restates only the multiple-of-16 and 1:3–3:1 rules;
+apply the full set to 2.6 as well, since nothing indicates a change, but the experimental threshold
+for 2.6 is not separately confirmed.
 
 Common sizes worth naming:
 
@@ -105,8 +128,11 @@ rather than defaulting to square.
 
 ## Quality levels
 
-`low`, `medium`, `high`, `xhigh`, `max`, `auto`. `xhigh` and `max` are **new with 2.5** and are not
-supported by earlier GPT Image models, whose ladder stops at `high`.
+`low`, `medium`, `high`, `xhigh`, `max`, `auto`. `xhigh` and `max` arrived with 2.5, continue in
+2.6, and are not supported by earlier GPT Image models, whose ladder stops at `high`.
+
+Quality *"controls how much visual detail the model can render, such as texture or small
+lettering."* That definition matters now that 2.6 has a second lever next to it.
 
 `auto` is the API default. Everything below is about what to *choose* deliberately, which is a
 different question from what happens when you choose nothing.
@@ -122,6 +148,27 @@ different question from what happens when you choose nothing.
 The recommended process is to set a baseline, step up only if the baseline misses a requirement,
 then step back down once approved to recover latency. Tune one setting at a time; compare quality
 levels before rewriting the prompt.
+
+## Complexity
+
+New in 2.6, and only there: `low`, `medium`, `high`. It *"controls how much the model plans before
+rendering"*, and both Sunburst and Flare use `high` when the field is omitted. Quality decides how
+finely the image is drawn; complexity decides how much the model rethinks the composition first.
+
+- `high` (the default) earns its place when the prompt leaves design decisions open. OpenAI's
+  comparison ran one under-specified sports illustration at all three levels: `low` added a crown
+  to the trophy, `medium` added a laurel wreath and shirt crests, `high` moved the banner into the
+  stands and cleared the foreground for the players. More planning means more of the model's own
+  ideas.
+- *"When the prompt already sets the layout, text, and style, higher complexity may make little
+  visible difference."* A fully specified prompt gains little from it.
+- `low` — *"Start with `low` when you want to change one detail."* High complexity can add latency
+  and introduce changes nobody asked for, which is exactly the wrong trade for a targeted edit.
+
+Keep the two levers apart when tuning: hold quality fixed while comparing complexity. *"If the
+layout is correct but small text is hard to read, compare quality settings at the same
+complexity."* A layout problem is a complexity or prompt question; a legibility problem is a quality
+question.
 
 ## Prompt order
 
@@ -165,7 +212,7 @@ This is where most image prompts fail, and where these models are strongest if a
 
 ## Working from reference images
 
-2.5 preserves reference subjects better than 2.0 did, but the prompt still carries most of the
+2.5 preserves reference subjects better than 2.0 did, and 2.6 better still across edits, but the prompt still carries most of the
 weight. Three techniques, all from OpenAI's guide.
 
 **Assign roles to the references.** *"Identify each input by number and purpose: subject, style,
@@ -337,6 +384,86 @@ drop shadow" — otherwise the model invents a background substitute.
 Then verify it actually worked: *"Check the decoded image's alpha channel, including hair, glass,
 shadows, and object edges."* A painted checkerboard is not transparency, and it is a common enough
 substitution that the check is worth doing every time.
+
+## Vector (SVG) output
+
+2.6 only, generations only: `output_format="svg"` on `/v1/images/generations` with `n=1`.
+For a transparent background, pass `background="transparent"` alongside it and ask for it in the
+prompt, as with PNG. Omit `stream`, `partial_images` and `output_compression`. The result
+is static XML: no scripts, no external resources, no embedded raster images. It cannot be produced
+through the edits endpoint, so any reference-guided refinement happens on a raster image first;
+the SVG prompt then describes the finished design from scratch. OpenAI documents it for the API only; whether ChatGPT
+returns a real `.svg` file is not confirmed, so tell a ChatGPT user to verify they got an actual
+vector file and not a PNG.
+
+How it works shapes how to write for it: the model first renders an internal reference image, and
+`quality` controls that reference, then vector content is drawn from it. So the prompt is an image
+prompt for a picture that must survive vectorization:
+
+- Describe a **graphic, not a photograph**: flat color, clean geometric shapes, a strong silhouette,
+  balanced negative space, minimal strokes. Photographic language — lens, depth of field, film
+  grain, skin texture — produces a reference that vectorizes into noise.
+- OpenAI's own SVG example reuses the Field & Flour logo prompt (see Worked examples) and keeps its
+  key line: *"Favor simplicity over detail so it reads clearly at small and large sizes."*
+- Keep the palette small and say so — a few named flat colors, "no gradients unless essential".
+  Fewer colors mean fewer paths and an asset the user can recolor by editing the file.
+- Text follows the normal text rules: quoted verbatim, exactly once. If small lettering comes out
+  wrong, raise `quality`, since that is what sharpens the reference.
+- Right fits: logos, icons, stickers, simple flat illustrations, pictograms. Wrong fits: anything
+  whose value lies in texture, lighting or realism. When the user asks for an SVG of a photograph,
+  say plainly it will be simplified into a flat graphic.
+- `size` and `quality` act on the reference image, not on the vector, which scales freely. Pick the
+  size for the composition — wide for a horizontal lockup, square for a stacked mark or an icon —
+  and the rule that print work justifies `xhigh`/`max` does not apply: raise quality only when
+  lettering or fine shapes come out wrong. What `size` sets in the SVG file itself (the `viewBox`)
+  is not documented.
+- For a standalone logo, the Brand identity package template's advice to request applied
+  touchpoints and a pure white background does not apply: one SVG is one mark on transparency, and
+  a mockup scene vectorizes badly. Keep its other pitfalls (subtract elements, check legibility at
+  small size).
+
+## Animated GIF output
+
+2.6 only: `output_format="gif"` on generations or edits. Two extra parameters, which apply only to
+GIFs:
+
+- `frame_count` — 2 to 16, default 9.
+- `frame_duration_ms` — 20 to 2000, rounded to 10 ms, default 200. Loop length is
+  `frame_count × frame_duration_ms`: the defaults give a 1.8-second loop.
+
+`size` describes **one frame**, in multiples of 16. All frames share one total pixel budget (the
+8,294,400-pixel ceiling of a single image), so frame count and frame size trade against each other:
+OpenAI's example uses `512x512` with 9 frames, and 9 frames at `960x960` already use the whole
+budget. Keep frames modest — around 512 to 768 px on the long edge — and cut `frame_count` or size
+when the request is rejected. The 655,360-pixel minimum for still images does not apply per frame.
+No streaming, no partial images, no custom compression. Transparency for GIF output is not
+documented: ask for a plain, flat, uniform background that is easy to remove afterwards.
+
+Timing follows the motion. The defaults (9 × 200 ms) suit a slow, deliberate action; fast cyclic
+motion — wings, flicker, a spinning wheel — needs shorter frames, around 60 to 100 ms, and more of
+them.
+
+The prompt describes **motion**, not just a picture. OpenAI's rule: *"For a smooth loop, give the
+subject a starting pose to return to and say whether the camera should move."* Build it as:
+
+1. The subject and its starting pose, described as for a still image.
+2. The action, as a short sequence of verbs: lifts, looks up, blinks, lowers.
+3. The return: the action ends back in the starting pose.
+4. The camera: "keep the camera still", or the one move it makes.
+5. What must stay constant across frames: props in hand, outfit, background.
+6. The loop: "make the motion loop smoothly."
+
+OpenAI's example (Sunburst, `512x512`, `quality="high"`, 9 frames at 200 ms) ends with exactly that
+tail: *"…slowly lifts it, looks up and blinks, then lowers it back to its starting pose. Keep the
+lantern in its hands and the camera still. Make the motion loop smoothly."*
+
+One small motion per GIF. Nine frames cannot carry a story; a wave, a blink, a flicker, steam rising
+or a logo settling into place is the right scale. A continuous cycle can run underneath that one
+action — wings beating throughout while the bird dips to a flower once — as long as the cycle is
+described as constant texture and only the action has a start and a return. To animate a character the user already has,
+send the still image to the edits endpoint with `output_format="gif"` and describe only the motion.
+In ChatGPT, the same request is the prompt plus the uploaded image, with frame count and timing
+stated in plain language.
 
 ## Iterating on a result
 

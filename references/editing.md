@@ -15,6 +15,7 @@ Source: OpenAI's [Image prompting guide](https://developers.openai.com/api/docs/
 ## Contents
 
 - [The spine of every edit prompt](#the-spine-of-every-edit-prompt)
+- [Pointing with markup](#pointing-with-markup)
 - [Local edits](#local-edits) — Remove an object · Swap an object · Change one condition
 - [Identity-preserving edits](#identity-preserving-edits) — Change clothing · Insert a person into a scene
 - [Working with several references](#working-with-several-references) — Combine references · Transfer a visual style
@@ -51,6 +52,44 @@ working is how a good result gets talked out of existence.
 **When prompting is the wrong tool.** If a region has to come back *pixel-identical*, no prompt
 guarantees that. OpenAI says it plainly: composite the approved edit back into the original image
 instead. Tell the user this rather than selling them a prompt that cannot deliver it.
+
+**Settings that protect an edit (2.6).** For an edit that changes one detail, recommend
+`complexity: low` — OpenAI's advice is to *"start with `low` when you want to change one detail"*,
+and the default `high` plans more and can rework things the preserve list was meant to keep. Omit
+`input_fidelity` on edits, per OpenAI. Mention these in the header line when the user works through
+the API; in ChatGPT they do not exist, and the preserve list carries the whole load.
+
+## Pointing with markup
+
+Describing *where* in words — "the vase on the second shelf, left of the clock" — is where local
+edits most often miss. Markup replaces the description with a drawing: the user circles or boxes
+the target on a transparent overlay, and the prompt refers to the mark. Available on 2.6 and 2.5
+through `/v1/images/edits` (the `markup` field); in ChatGPT, the same move is drawing on the image
+before sending it.
+
+Reach for it when the target is hard to name uniquely — one of several similar objects, a patch of
+background, a spot with no landmark — or when there are several targets at once.
+
+How to write the prompt:
+
+- **Name each mark by colour and shape, exactly as drawn**, and give it one instruction. OpenAI's
+  example: *"Recolor the striped vase inside the red circle to solid cobalt blue ceramic."* With
+  several marks, one line per mark: "Red circle: … Blue box: … Green arrow: …"
+- **Ask for the marks to be removed** from the result: "Remove the red circle from the finished
+  photo." Otherwise the annotation can survive into the output.
+- **The spine still applies.** The mark says where; the preserve list still says what must not move.
+- **Several marks are the one exception to "one change per request".** Each mark scopes its own
+  change, so the model is not left guessing which instruction to apply where, and one pass avoids
+  the drift that two full re-renders would add. Keep it to one instruction per mark and nothing
+  outside the marks. If one mark lands and another fails, take the good output as the next input
+  and redo the failed mark alone.
+
+Mechanics to pass on to an API user: the overlay is a transparent PNG with the **same pixel
+dimensions** as the first input image, drawn on a separate layer, never flattened onto the photo.
+It applies only to the first image; any further images act as references. Do not send `mask` in
+the same request. A mask and markup do the same job by different means, and markup is the easier
+one to make — a mask needs an alpha channel and is, in OpenAI's words, guidance rather than a
+pixel-exact boundary anyway.
 
 ---
 

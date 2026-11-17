@@ -1,7 +1,8 @@
 # GPT Image Style Library
 
 An agent skill that turns a rough image idea into a production-ready prompt for **OpenAI's GPT Image
-models** — `gpt-image-2.5-sunburst`, `gpt-image-2.5-flare`, and the still-available `gpt-image-2`.
+models** — `gpt-image-2.6-sunburst` and `gpt-image-2.6-flare`, plus the still-available 2.5 pair and
+`gpt-image-2` until its 2027-02-10 shutdown.
 Give it a one-line description of the image you want — a poster, an infographic, a product shot, a
 persona transformation from a reference photo — and it hands back a finished, copy-ready prompt.
 **It never generates the image itself, only the prompt text.**
@@ -13,7 +14,9 @@ Built on:
   illustration, characters, historical scenes, documents, and more.
 - **The models' real capabilities**, sourced from OpenAI's own prompting guide: valid sizes and
   aspect ratios, quality levels, how to make text render correctly, how to phrase exclusions,
-  documented weaknesses, and techniques for fighting the "AI-generated" look.
+  documented weaknesses, and techniques for fighting the "AI-generated" look. Includes the 2.6
+  additions: the `complexity` lever, SVG vector output, looping animated GIFs, and markup-guided
+  edits.
 - **7 worked examples** mined from a corpus of 541 real, published GPT Image 2 prompts, each
   annotated with the technique it demonstrates.
 
@@ -37,7 +40,9 @@ reference). It has since diverged substantially:
   against the model's actual size constraints, and a pre-delivery verification checklist.
 - Kept current with the model: updated for **GPT Image 2.5** (Sunburst and Flare) on 2026-09-09,
   the day after release — including the new `xhigh`/`max` quality levels, model selection, and
-  OpenAI's reference-image techniques for identity preservation across edits.
+  OpenAI's reference-image techniques for identity preservation across edits. Updated for
+  **GPT Image 2.6** on 2026-11-16: complexity, SVG and GIF prompting, markup edits, and the
+  current deprecation schedule.
 - Removed `references/style-library.md` (the original catalog index), superseded by the above.
 
 See `LICENSE` for the original MIT license and attribution.
