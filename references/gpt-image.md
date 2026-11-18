@@ -189,6 +189,11 @@ and say it is a recommendation, not a guarantee:
 - **Rápido** — prompts that already fix layout, text and style; targeted edits that change one
   detail (more planning can rework what the preserve list protects); quick exploration.
 
+When the two lists collide, exact text and multiple references win: a fully specified prompt still
+gets **con razonamiento** if it must reproduce exact lettering (a product label, a headline) or
+combine more than one input image. "The prompt is already closed" only decides the level when
+neither is present.
+
 ## Prompt order
 
 Start by defining the result: *"Name the subject and intended use, such as a product photograph,
@@ -435,8 +440,9 @@ and display size; outline or filled, with stroke width, caps and joins; the comp
 shapes; minimal markup (only `<path>` and basic shapes, no `<style>`, ids, classes, transforms or
 metadata, coordinates rounded); legibility at the smallest size it will display; and
 `aria-hidden="true"` when it sits next to a text label. If the user's other icons have a known
-style, match it. In the header, write **Plantilla:** `SVG code (icon)` · **Modelo:** text model
-(ChatGPT or any LLM), and omit size and quality, which do not apply.
+style, match it. The header follows the general format in `SKILL.md`: **Razonamiento:** `rápido`
+(a short, fully specified code task) · **Formato:** `código SVG`, with no size or quality, which do
+not apply; name the approach under "Por qué este enfoque".
 
 How the image-model route works shapes how to write for it: the model first renders an internal reference image, and
 `quality` controls that reference, then vector content is drawn from it. So the prompt is an image
