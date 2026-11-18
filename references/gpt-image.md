@@ -396,7 +396,28 @@ the SVG prompt then describes the finished design from scratch. OpenAI documents
 returns a real `.svg` file is not confirmed, so tell a ChatGPT user to verify they got an actual
 vector file and not a PNG.
 
-How it works shapes how to write for it: the model first renders an internal reference image, and
+**Two routes to an SVG.** The image model's SVG output is one. The other is asking a text model —
+ChatGPT itself, or any LLM — to *write* the SVG code. Choose by what the asset is:
+
+- **Code route:** simple UI icons, pictograms, geometric marks — anything a designer would draw
+  with a handful of strokes on a grid. The result is minimal, editable markup that can match an
+  existing icon set (a `24x24` viewBox, `stroke="currentColor"`). It works in ChatGPT today with no
+  image feature involved. It is weak at anything organic or illustrative: a text model placing
+  curves by coordinates produces stiff shapes.
+- **Image-model route:** logos with character, illustrations, stickers — shapes that need an eye,
+  not coordinates. API only.
+
+When the code route fits, the deliverable is still a prompt, but a code-writing one, in English like
+every other prompt. Open with "Write the SVG code as text. Do not generate an image." — ChatGPT
+tends to trigger image generation when asked for an icon and returns a PNG. Then specify: viewBox
+and display size; outline or filled, with stroke width, caps and joins; the composition as simple
+shapes; minimal markup (only `<path>` and basic shapes, no `<style>`, ids, classes, transforms or
+metadata, coordinates rounded); legibility at the smallest size it will display; and
+`aria-hidden="true"` when it sits next to a text label. If the user's other icons have a known
+style, match it. In the header, write **Plantilla:** `SVG code (icon)` · **Modelo:** text model
+(ChatGPT or any LLM), and omit size and quality, which do not apply.
+
+How the image-model route works shapes how to write for it: the model first renders an internal reference image, and
 `quality` controls that reference, then vector content is drawn from it. So the prompt is an image
 prompt for a picture that must survive vectorization:
 

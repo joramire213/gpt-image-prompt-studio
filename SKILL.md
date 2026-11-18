@@ -52,6 +52,8 @@ in whatever language the user gave it, verbatim.
    user asks for an SVG or vector file, or for a GIF or anything that moves, read the SVG or GIF
    section of `gpt-image.md` before drafting: both change what the prompt must say, and SVG output
    exists only through the API, not confirmed in ChatGPT, so say that when the user is on ChatGPT.
+   For a simple icon or pictogram, prefer the code route described there — a prompt that has a
+   text model write the SVG — which works anywhere, ChatGPT included.
 2. **Classify.** What is the user making? Match to a template family in `templates.md`. Pick the
    strongest match and commit. Only surface a choice when two families would produce genuinely
    different images, and then recommend one rather than offering a menu.
