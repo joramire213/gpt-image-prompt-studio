@@ -57,7 +57,9 @@ instead. Tell the user this rather than selling them a prompt that cannot delive
 `complexity: low` — OpenAI's advice is to *"start with `low` when you want to change one detail"*,
 and the default `high` plans more and can rework things the preserve list was meant to keep. Omit
 `input_fidelity` on edits, per OpenAI. Mention these in the header line when the user works through
-the API; in ChatGPT they do not exist, and the preserve list carries the whole load.
+the API; in ChatGPT they do not exist — recommend the fast reasoning level for a one-detail edit
+instead (see "In ChatGPT: the reasoning level" in `gpt-image.md`), and let the preserve list carry
+the rest.
 
 ## Pointing with markup
 

@@ -15,6 +15,7 @@ per-model pages and the deprecations page. Current as of 2026-11-16.
 - [Size and aspect ratio](#size-and-aspect-ratio)
 - [Quality levels](#quality-levels)
 - [Complexity](#complexity)
+- [In ChatGPT: the reasoning level](#in-chatgpt-the-reasoning-level)
 - [Prompt order](#prompt-order)
 - [Rendering text inside the image](#rendering-text-inside-the-image)
 - [Working from reference images](#working-from-reference-images)
@@ -169,6 +170,24 @@ Keep the two levers apart when tuning: hold quality fixed while comparing comple
 layout is correct but small text is hard to read, compare quality settings at the same
 complexity."* A layout problem is a complexity or prompt question; a legibility problem is a quality
 question.
+
+## In ChatGPT: the reasoning level
+
+ChatGPT exposes none of the API settings. The one lever the user holds is the reasoning level in
+the model picker — a fast mode, or a Thinking/Pro model on paid plans. What is documented:
+
+- OpenAI's Images 2.6 system card describes it as giving users *"more control over generation and
+  editing speed"* — officially, a speed control.
+- Since ChatGPT Images 2.0, image generation with thinking *plans and refines before generating*.
+
+**Inference, not documented:** the reasoning level most likely plays the role `complexity` plays in
+the API — more planning, more of the model's own composition decisions. Recommend it on that basis,
+and say it is a recommendation, not a guarantee:
+
+- **Con razonamiento** — open-ended compositions, dense or exact text, infographics, diagrams,
+  multi-zone layouts, combining several references.
+- **Rápido** — prompts that already fix layout, text and style; targeted edits that change one
+  detail (more planning can rework what the preserve list protects); quick exploration.
 
 ## Prompt order
 
@@ -392,8 +411,10 @@ For a transparent background, pass `background="transparent"` alongside it and a
 prompt, as with PNG. Omit `stream`, `partial_images` and `output_compression`. The result
 is static XML: no scripts, no external resources, no embedded raster images. It cannot be produced
 through the edits endpoint, so any reference-guided refinement happens on a raster image first;
-the SVG prompt then describes the finished design from scratch. OpenAI documents it for the API only; whether ChatGPT
-returns a real `.svg` file is not confirmed, so tell a ChatGPT user to verify they got an actual
+the SVG prompt then describes the finished design from scratch. Whether ChatGPT returns SVG from
+the image model is unclear: the Images 2.6 system card limits SVG output to the API, while the
+launch announcement mentions "SVG exports" without saying where. For a ChatGPT user, prefer the
+code route below; if they want the image-model route anyway, tell them to check they got a real
 vector file and not a PNG.
 
 **Two routes to an SVG.** The image model's SVG output is one. The other is asking a text model —
@@ -483,8 +504,13 @@ or a logo settling into place is the right scale. A continuous cycle can run und
 action — wings beating throughout while the bird dips to a flower once — as long as the cycle is
 described as constant texture and only the action has a start and a return. To animate a character the user already has,
 send the still image to the edits endpoint with `output_format="gif"` and describe only the motion.
-In ChatGPT, the same request is the prompt plus the uploaded image, with frame count and timing
-stated in plain language.
+In ChatGPT, the same request is the prompt plus the uploaded image. There, the first line of the
+prompt must say what it is — "Create an animated GIF that loops seamlessly: 16 frames, about 120
+milliseconds per frame. Aspect ratio 2:3." — or ChatGPT may return a still. Frame count and pace
+written this way are honoured: a real test on 2026-11-18 asked for 16 frames and got 16, with a
+continuous loop (one observation). ChatGPT also lets the user adjust the speed and edit individual
+frames after generating, which is the fallback when the pace comes out wrong. GIF creation is still
+rolling out, so an account without it returns a still image.
 
 ## Iterating on a result
 

@@ -42,7 +42,10 @@ reference). It has since diverged substantially:
   the day after release — including the new `xhigh`/`max` quality levels, model selection, and
   OpenAI's reference-image techniques for identity preservation across edits. Updated for
   **GPT Image 2.6** on 2026-11-16: complexity, SVG and GIF prompting, markup edits, and the
-  current deprecation schedule.
+  current deprecation schedule. Since 2026-11-18 it assumes the prompt will be pasted into
+  ChatGPT unless told otherwise: every prompt states its output type and format in plain
+  language, and each delivery recommends a reasoning level; API parameters appear only for API
+  users.
 - Removed `references/style-library.md` (the original catalog index), superseded by the above.
 
 See `LICENSE` for the original MIT license and attribution.
